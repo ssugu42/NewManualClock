@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<head>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+</head>
+<body>
+	<div>
+		<h2>CANVAS CLOCK</h2>
+		<canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var cy = canvas.width / 2;				//cx
+var radius = canvas.height / 2;			//cy
+ctx.translate(radius, radius);
+radius = radius * 0.80;
+// setInterval(drawClock, 1000);
+drawClock();
+
+function drawClock() {
+  drawFace(ctx, radius);
+  drawSeconds();
+}
+
+function drawFace(ctx, radius) {
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, 2*Math.PI);
+  ctx.fillStyle = 'gray';
+  ctx.fill();
+  ctx.stroke();
+  ctx.lineWidth = radius*0.04;			//outer circle thickness
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, radius*0.04, 0, 2*Math.PI);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+}
+
+function drawSeconds(){
+var canvasOffset = $("#canvas").offset();
+var offsetX = canvasOffset.left;
+var offsetY = canvasOffset.top;
+
+var isDown = false;
+
+var w;
+var h;
+var r = 0;
+
+var img = new Image();
+img.onload = function () {
+    w = img.width / 2;
+    h = img.height / 2;
+    draw();
+}
+img.src = "https://dl.dropboxusercontent.com/u/139992952/stackoverflow/facesSmall.png";
+
+function draw() {
+    drawRotationHandle(true);
+    drawRect();
+}
+
+function drawRect(){
+    ctx.save();
+	ctx.translate(cy, radius);
+    ctx.rotate(r);
+    console.log("Rotation Degree"+r);
+    ctx.drawImage(img, 0, 0, img.width, img.height, -w / 2, -h / 2, w, h);
+    ctx.restore();
+}
+
+function handleMouseUp(e){
+    isDown = false;
+}
+
+function handleMouseOut(e){
+    isDown = false;
+}
+
+function handleMouseMove(e){
+    if (!isDown) {
+        return;
+    }
+
+    mouseX = parseInt(e.clientX - offsetX);
+    mouseY = parseInt(e.clientY - offsetY);
+    var dx = mouseX - cy;
+    var dy = mouseY - radius;
+    var angle = Math.atan2(dy, dx);
+    r = angle;
+    draw();
+}
+
+$("#canvas").mousedown(function (e) {
+    handleMouseDown(e);
+});
+
+function handleMouseDown(e){
+    mouseX = parseInt(e.clientX - offsetX);
+    mouseY = parseInt(e.clientY - offsetY);
+    drawRotationHandle(false);
+    isDown = ctx.isPointInPath(mouseX, mouseY);
+    console.log("Mouse"+isDown);
+}
+
+function drawRotationHandle(withFill){
+    ctx.save();
+//    ctx.translate(cy, radius);
+    ctx.rotate(r);
+    ctx.beginPath();
+    ctx.moveTo(0, -1);
+    ctx.lineTo(w / 2 + 70, -1);
+    ctx.lineTo(w / 2 + 70, -7);
+    ctx.lineTo(w / 2 + 90, -1);
+    ctx.lineTo(w / 2 + 90, 1);
+    ctx.lineTo(w / 2 + 70, 7);
+    ctx.lineTo(w / 2 + 70, 1);
+    ctx.lineTo(0, 1);
+    ctx.closePath();
+    if (withFill) {
+        ctx.fillStyle = "blue";
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+$("#canvas").mousemove(function (e) {
+    handleMouseMove(e);
+});
+$("#canvas").mouseup(function (e) {
+    handleMouseUp(e);
+});
+$("#canvas").mouseout(function (e) {
+    handleMouseOut(e);
+});
+}
+</script>
+</html>
